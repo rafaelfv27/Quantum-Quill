@@ -15,7 +15,7 @@ This is a Streamlit application that allows users to revise scientific texts in 
    ```
 6. **Llama 3.1 Model**: Download the Llama 3.1 model using Ollama:
    
-   visit and download for your OS [Link text](https://ollama.com/download)
+   visit and download for your OS [Ollama](https://ollama.com/download)
    
 8. **Install your desired model (default llama3.1:8b)**
    ```
