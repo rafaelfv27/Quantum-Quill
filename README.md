@@ -1,4 +1,4 @@
-# Simplified Bilingual Streamlit Scientific Text Revision App
+# Quantum Quill
 
 This is a Streamlit application that allows users to revise scientific texts in both English and Portuguese using Llama 3.1 models from Ollama.
 
