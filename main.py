@@ -1,4 +1,7 @@
+
+import os 
 import streamlit as st
+os.system("pip3 install ollama")
 import ollama
 import time
 
