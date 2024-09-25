@@ -19,7 +19,7 @@
    
 8. **Install your desired model (default llama3.1:latest)**
    ```
-   ollama run llama3.1
+   ollama run llama3.1:latest
    ```
 10. **Run the app**
    ```
