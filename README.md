@@ -17,7 +17,7 @@
    
    visit and download for your OS [Ollama](https://ollama.com/download)
    
-8. **Install your desired model (default llama3.1:8b)**
+8. **Install your desired model (default llama3.1:latest)**
    ```
    ollama run llama3.1
    ```
