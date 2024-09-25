@@ -1,9 +1,7 @@
-
 import os 
 import streamlit as st
-os.system("pip3 install ollama")
-import ollama
 import time
+import ollama
 
 def get_available_models():
     try:
@@ -62,27 +60,91 @@ def revise_scientific_text(text, model, language, timeout=60):
     except Exception as e:
         yield f"An unexpected error occurred: {str(e)}"
 
-st.title("Simplified Bilingual Scientific Text Revision App")
+def get_coding_prompt(task, code_snippet=None):
+    
+        return f"""
+You are an expert programmer. The user has provided the following task:
 
-available_models = get_available_models()
-if not available_models:
-    st.error("No models found. Please make sure you have at least one model installed via Ollama.")
-    st.stop()
+{task}
 
-default_model = "llama3.1:8b" if "llama3.1:8b" in available_models else available_models[0]
-selected_model = st.selectbox("Select model:", available_models, index=available_models.index(default_model))
+Please provide a high-quality solution for this task. Your solution should be concise, efficient, and follow best practices.
 
-model_to_use = selected_model 
-language = st.radio("Select revision language:", ["English", "Portuguese"])
+{"```python" if code_snippet else ""}
+{code_snippet or ""}
+{"```"}
 
-timeout = st.slider("Timeout (seconds):", min_value=10, max_value=300, value=60, step=10)
+Your solution:"""
 
-user_input = st.text_area("Enter the scientific text you want to revise:", height=200)
+def assist_with_coding(task, code_snippet=None, timeout=60):
+    prompt = get_coding_prompt(task, code_snippet)
+    
+    try:
+        start_time = time.time()
+        stream = ollama.generate(model="llama3.1:latest", prompt=prompt, stream=True)
+        
+        response = ""
+        for chunk in stream:
+            response += chunk['response']
+            yield response
+            
+            if time.time() - start_time > timeout:
+                yield response + "\n\n[Response truncated due to timeout]"
+                break
+    except ollama._types.ResponseError as e:
+        yield f"Error: {str(e)}. Please make sure the selected model is available."
+    except Exception as e:
+        yield f"An unexpected error occurred: {str(e)}"
 
-if st.button("Revise Text"):
-    if user_input:
-        revision_placeholder = st.empty()
-        for revised_text in revise_scientific_text(user_input, model_to_use, language, timeout):
-            revision_placeholder.markdown(revised_text)
-    else:
-        st.warning("Please enter some text to revise.")
+def quantum_quill_page():
+    st.title("QuantumQuill - Text Revision Tool")
+
+    available_models = get_available_models()
+    if not available_models:
+        st.error("No models found. Please make sure you have at least one model installed via Ollama.")
+        st.stop()
+
+    default_model = "llama3.1:latest" if "llama3.1:latest" in available_models else available_models[0]
+    selected_model = st.selectbox("Select model:", available_models, index=available_models.index(default_model))
+
+    model_to_use = selected_model 
+    language = st.radio("Select revision language:", ["English", "Portuguese"])
+
+    timeout = st.slider("Timeout (seconds):", min_value=10, max_value=300, value=60, step=10)
+
+    user_input = st.text_area("Enter the scientific text you want to revise:", height=200)
+
+    if st.button("Revise Text"):
+        if user_input:
+            revision_placeholder = st.empty()
+            for revised_text in revise_scientific_text(user_input, model_to_use, language, timeout):
+                revision_placeholder.markdown(revised_text)
+        else:
+            st.warning("Please enter some text to revise.")
+
+def coding_chatbot_page():
+    st.title("Coding Chatbot")
+
+    coding_task = st.text_area("Describe the coding task you need help with:", height=100)
+
+    if st.button("Get Coding Assistance"):
+        if coding_task:
+            coding_assistance_placeholder = st.empty()
+            for coded_response in assist_with_coding(coding_task):
+                coding_assistance_placeholder.markdown(coded_response)
+        else:
+            st.warning("Please provide a coding task to get assistance.")
+def main():
+    st.set_page_config(page_title="QuantumQuill & Coding Chatbot")
+
+    pages = {
+        "QuantumQuill - Text Revision Tool": quantum_quill_page,
+        "Coding Chatbot": coding_chatbot_page
+    }
+
+    st.sidebar.title("Navigation")
+    selection = st.sidebar.radio("Go to", list(pages.keys()))
+
+    pages[selection]()
+
+if __name__ == "__main__":
+    main()
